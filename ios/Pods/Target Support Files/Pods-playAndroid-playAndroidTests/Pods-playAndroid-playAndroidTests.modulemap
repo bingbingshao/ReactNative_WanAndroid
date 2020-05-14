@@ -1,0 +1,6 @@
+module Pods_playAndroid_playAndroidTests {
+  umbrella header "Pods-playAndroid-playAndroidTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
