@@ -217,7 +217,7 @@ class Article extends Component {
      */
     _onRefresh = () => {
         this.props.MyStateChange({
-            page4: 0,
+            page4: 1,
             font4: 0,
             isRefresh4: true,
             // collectList: [],

@@ -299,7 +299,7 @@ class SearchResult extends Component {
      */
     _onRefresh = () => {
         this.props.HomeStateChange({
-            searchPage: 0,
+            searchPage: 1,
             searchFont: 0,
             isRefresh: true,
         });

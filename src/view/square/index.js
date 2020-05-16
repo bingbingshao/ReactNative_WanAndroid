@@ -341,7 +341,7 @@ class index extends Component {
      */
     _onRefresh = () => {
         this.props.SquareStateChange({
-            page: 0,
+            page: 1,
             font: 0,
             isRefresh: true,
             dataList: [],

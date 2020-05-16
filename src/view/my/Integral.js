@@ -43,7 +43,7 @@ class Integral extends Component {
     //卸载前调用
     componentWillUnmount() {
         this.props.MyStateChange({
-            page1: 0,
+            page1: 1,
             font1: 0,
             isRefresh1: true,
             integralList: [],
@@ -112,7 +112,7 @@ class Integral extends Component {
     //数据列表
     _list() {
         const {integralList} = this.props.my;
-        // console.log('articleList', seriesArticleList);
+        console.log('integralList', integralList);
         return (
             <FlatList
                 showsVerticalScrollIndicator={false}
@@ -152,7 +152,7 @@ class Integral extends Component {
                         opacity={0.2}
                         style={[styles.itemView1, Style.rowBetweenCenter]}>
                         <View style={Style.rowStartCenter}>
-                            <Text style={styles.font1}>{item.rank + 30}</Text>
+                            <Text style={styles.font1}>{item.rank}</Text>
                             <Text style={styles.font2}>{'    '}{item.username}</Text>
                         </View>
                         <Text style={styles.font3}>{item.coinCount}</Text>
@@ -181,7 +181,7 @@ class Integral extends Component {
      */
     _onRefresh = () => {
         this.props.MyStateChange({
-            page1: 0,
+            page1: 1,
             font1: 0,
             isRefresh1: true,
         });

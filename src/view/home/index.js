@@ -384,7 +384,7 @@ class index extends Component {
      */
     _onRefresh = () => {
         this.props.HomeStateChange({
-            page: 0,
+            page: 1,
             font: 0,
             isRefresh: true,
         });

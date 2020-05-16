@@ -347,7 +347,7 @@ class Collect extends Component {
      */
     _onRefresh = () => {
         this.props.MyStateChange({
-            page3: 0,
+            page3: 1,
             font3: 0,
             isRefresh3: true,
             // collectList: [],

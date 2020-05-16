@@ -325,7 +325,7 @@ class SeriesDetails extends Component {
     _onRefresh = () => {
         console.log('_onRefresh');
         this.props.SquareStateChange({
-            seriesPage: 0,
+            seriesPage: 1,
             seriesFont: 0,
             seriesIsRefresh: true,
             seriesArticleList: [],

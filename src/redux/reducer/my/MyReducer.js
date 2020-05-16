@@ -19,25 +19,25 @@ const initialState = {
 
     //积分排行榜
     integralList: [],
-    page1: 0,
-    font1: 0,
+    page1: 1,
+    font1: 1,
     isRefresh1: true,
     integralHistoryList: [],
-    page2: 0,
-    font2: 0,
+    page2: 1,
+    font2: 1,
     isRefresh2: true,
 
     //收藏
     collectList: [],
-    font3: 0,
-    page3: 0,
+    font3: 1,
+    page3: 1,
     isRefresh3: true,
     collectNetList: [],
 
     //我的文章
     ArticleList: [],
-    page4: 0,
-    font4: 0,
+    page4: 1,
+    font4: 1,
     isRefresh: true,
     deleteShow: false,
     deleteArticleId:''

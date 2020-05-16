@@ -41,7 +41,7 @@ class IntegralHistory extends Component {
     //卸载前调用
     componentWillUnmount() {
         this.props.MyStateChange({
-            page2: 0,
+            page2: 1,
             font2: 0,
             isRefresh2: true,
             integralHistoryList: [],
