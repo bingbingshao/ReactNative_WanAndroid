@@ -2,7 +2,7 @@
  * @format
  */
 import React, {Component} from 'react';
-import {AppRegistry, BackHandler, ToastAndroid} from 'react-native';
+import {AppRegistry, BackHandler, NativeModules, Platform, ToastAndroid} from 'react-native';
 import {name as appName} from './app.json';
 import {Provider} from 'react-redux';
 import configureStore from './src/redux/Store';
@@ -15,12 +15,25 @@ console.disableYellowBox = true; // 关闭全部黄色警告
 const AppNav = createAppContainer(RootNavigator);
 //获取store
 const store = configureStore();
+let SplashScreen = NativeModules.SplashScreen;
 
 
 export default class Root extends Component {
 
     constructor(props) {
         super(props)
+    }
+
+    componentWillMount() {
+        if (Platform.OS === 'android') {
+            //安卓通过SplashScreen设置启动页
+            this.timer = setTimeout(
+                () => {
+                    SplashScreen.hide();
+                },
+                0,
+            );
+        }
     }
 
 
