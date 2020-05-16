@@ -63,6 +63,7 @@ const Theme = {
     color_14: '#9FB844',
     color_15: '#D669D1',
     color_16: 'rgb(241,241,241)',
+    color_17: '#EB6A3B',
 
 
 };

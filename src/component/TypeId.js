@@ -37,6 +37,10 @@ export const NAVIGATION = 'NAVIGATION';  //导航
 /**
  * 文章类型
  */
-
 export const NET = 0;  //网址
 export const ARTICLE = 1;  //文章
+
+/**
+ * 物理返回键
+ */
+export const ANDROID_BLACK = 'ANDROID_BLACK';  //物理返回键

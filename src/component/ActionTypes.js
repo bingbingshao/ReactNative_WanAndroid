@@ -11,6 +11,14 @@
  */
 export const GO_BACK_PAGE = 'GO_BACK_PAGE'; //返回上一层
 
+
+/**
+ * 修改App主题色
+ */
+export const INIT_THEME_COLOR = 'INIT_THEME_COLOR'; //初始化主题色
+export const CHANGE_THEME_COLOR = 'CHANGE_THEME_COLOR'; //修改主题色
+export const SAVE_THEME_COLOR = 'SAVE_THEME_COLOR'; //存储主题色
+
 /**
  * 登录
  */

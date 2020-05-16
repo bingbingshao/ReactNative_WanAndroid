@@ -156,21 +156,22 @@ class SeriesDetails extends Component {
     //顶部导航渲染
     _nav() {
         const {seriesMenuList, seriesMenuSelected} = this.props.square;
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[Style.barView, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <TouchableHighlight
                         underlayColor={'transparent'}
                         onPress={() => this.props.goBackPage()}>
                         <View style={Style.rowCenterCenter}>
-          <AntDesign name={'arrowleft'} color={Theme.white} size={ScreenUtil.setSpFont(20)}
+                            <AntDesign name={'arrowleft'} color={Theme.white} size={ScreenUtil.setSpFont(20)}
                                        style={{paddingLeft: ScreenUtil.scaleSizeW(10)}}/>
                             <Text style={Style.barTitle}>{' '}{seriesMenuList.name}</Text>
                         </View>
                     </TouchableHighlight>
                 </View>
-                <View style={[Style.barView1, Style.rowBetweenCenter]}>
+                <View style={[Style.barView1, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <ScrollView
                         ref={(view) => {
                             this.myScrollView = view;
@@ -363,6 +364,7 @@ function mapStateToProps(state) {
         nav: state.nav,
         square: state.square,
         login: state.login,
+        theme: state.theme,
     };
 }
 

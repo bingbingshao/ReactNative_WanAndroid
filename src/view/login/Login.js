@@ -68,10 +68,11 @@ class Login extends Component {
      */
     //顶部导航渲染
     _nav() {
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[Style.barView, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <TouchableHighlight
                         underlayColor={'transparent'}
                         onPress={() => this.props.goBackPage()}>
@@ -88,6 +89,7 @@ class Login extends Component {
 
     _loginView() {
         const {loginAccount, loginPassword} = this.props.login;
+        const {themeColor} = this.props.theme;
 
         return (
             <View style={[styles.loginView, Style.columnStartCenter]}>
@@ -122,7 +124,7 @@ class Login extends Component {
                 <TouchableHighlight
                     underlayColor={'transparent'}
                     onPress={() => this.login()}>
-                    <View style={[styles.button, Style.rowCenterCenter]}>
+                    <View style={[styles.button, Style.rowCenterCenter, {backgroundColor: themeColor}]}>
                         <Text style={styles.font1}>{Message.LOGIN}</Text>
                     </View>
                 </TouchableHighlight>
@@ -131,12 +133,13 @@ class Login extends Component {
     }
 
     _other() {
+        const {themeColor} = this.props.theme;
         return (
             <View style={[Style.rowEndCenter, styles.otherView]}>
                 <TouchableHighlight
                     underlayColor={'transparent'}
                     onPress={() => this.props.goRegister()}>
-                    <Text style={styles.font2}>
+                    <Text style={[styles.font2, {color: themeColor}]}>
                         {Message.REGISTER}
                     </Text>
                 </TouchableHighlight>
@@ -160,6 +163,7 @@ function mapStateToProps(state) {
     return {
         nav: state.nav,
         login: state.login,
+        theme: state.theme,
     };
 }
 
@@ -202,7 +206,7 @@ const styles = StyleSheet.create({
         fontSize: ScreenUtil.setSpFont(13),
         color: Theme.black,
         padding: 0,
-        height:ScreenUtil.scaleSizeH(20*2),
+        height: ScreenUtil.scaleSizeH(20 * 2),
     },
     button: {
         width: deviceWidth - ScreenUtil.scaleSizeW(50),

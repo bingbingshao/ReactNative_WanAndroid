@@ -77,15 +77,16 @@ class PublishArticle extends Component {
      */
     //顶部导航渲染
     _nav() {
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[Style.barView, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <TouchableHighlight
                         underlayColor={'transparent'}
                         onPress={() => this.props.goBackPage()}>
                         <View style={Style.rowCenterCenter}>
-          <AntDesign name={'arrowleft'} color={Theme.white} size={ScreenUtil.setSpFont(20)}
+                            <AntDesign name={'arrowleft'} color={Theme.white} size={ScreenUtil.setSpFont(20)}
                                        style={{paddingLeft: ScreenUtil.scaleSizeW(10)}}/>
                             <Text style={Style.barTitle}>{' '}{Message.MY_ARTICLE_SHARE}</Text>
                         </View>
@@ -222,6 +223,7 @@ function mapStateToProps(state) {
         nav: state.nav,
         my: state.my,
         login: state.login,
+        theme: state.theme,
     };
 }
 

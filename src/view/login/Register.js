@@ -76,10 +76,11 @@ class Register extends Component {
      */
     //顶部导航渲染
     _nav() {
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[Style.barView, Style.rowBetweenCenter,{backgroundColor:themeColor}]}>
                     <TouchableHighlight
                         underlayColor={'transparent'}
                         onPress={() => this.props.goBackPage()}>
@@ -96,6 +97,7 @@ class Register extends Component {
 
     _loginView() {
         const {registerAccount, registerPassword, registerPasswordAgain} = this.props.login;
+        const {themeColor} = this.props.theme;
         return (
             <View style={[styles.loginView, Style.columnStartCenter]}>
                 <Image style={styles.image} source={require('../../image/login/icon.png')}/>
@@ -143,7 +145,7 @@ class Register extends Component {
                 <TouchableHighlight
                     underlayColor={'transparent'}
                     onPress={() => this.register()}>
-                    <View style={[styles.button, Style.rowCenterCenter]}>
+                    <View style={[styles.button, Style.rowCenterCenter,{backgroundColor:themeColor}]}>
                         <Text style={styles.font1}>{Message.REGISTER}</Text>
                     </View>
                 </TouchableHighlight>
@@ -166,6 +168,7 @@ function mapStateToProps(state) {
     return {
         nav: state.nav,
         login: state.login,
+        theme: state.theme,
     };
 }
 

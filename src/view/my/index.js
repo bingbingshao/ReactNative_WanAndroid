@@ -127,10 +127,11 @@ class index extends Component {
     _nav() {
         const {userId, userName} = this.props.login;
         const {range} = this.props.my;
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[styles.navView]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[styles.navView, {position: 'relative', backgroundColor: themeColor}]}>
                     <View style={[styles.navHead, Style.rowStartCenter]}>
                         <Image style={styles.image} source={require('../../image/login/head.jpg')}/>
                         {
@@ -157,6 +158,17 @@ class index extends Component {
                                     </Text>
                                 </View>
                         }
+
+                    </View>
+                    <View style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        width: deviceWidth,
+                        backgroundColor: '#fff',
+                        height: ScreenUtil.scaleSizeH(40),
+                        borderTopLeftRadius: ScreenUtil.scaleSizeH(50),
+                        borderTopRightRadius: ScreenUtil.scaleSizeH(50),
+                    }}>
 
                     </View>
                 </View>
@@ -310,6 +322,7 @@ function mapStateToProps(state) {
         nav: state.nav,
         login: state.login,
         my: state.my,
+        theme: state.theme,
     };
 }
 
@@ -387,7 +400,7 @@ const styles = StyleSheet.create({
         // left:0,
         backgroundColor: Theme.white,
         borderRadius: ScreenUtil.scaleSizeH(30),
-        paddingTop: ScreenUtil.scaleSizeH(20),
+        // paddingTop: ScreenUtil.scaleSizeH(20),
         width: deviceWidth,
     },
     listView1: {

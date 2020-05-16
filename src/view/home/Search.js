@@ -119,10 +119,11 @@ class Search extends Component {
     //顶部导航渲染
     _nav() {
         const {searchText} = this.props.home;
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[Style.barView, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <TouchableHighlight
                         underlayColor={'transparent'}
                         onPress={() => this.props.goBackPage()}>
@@ -162,11 +163,12 @@ class Search extends Component {
     _hotSearch() {
 
         const {hotSearch} = this.props.home;
+        const {themeColor} = this.props.theme;
 
         return (
             <View style={styles.view1}>
                 <View style={[Style.rowBetweenCenter, {marginBottom: ScreenUtil.scaleSizeH(10)}]}>
-                    <Text style={styles.font1}>{Message.SEARCH_HOT}</Text>
+                    <Text style={[styles.font1,{color:themeColor}]}>{Message.SEARCH_HOT}</Text>
                 </View>
                 <View style={Style.rowWarp}>
                     {
@@ -212,11 +214,12 @@ class Search extends Component {
     _historySearch() {
 
         const {historySearch} = this.props.home;
+        const {themeColor} = this.props.theme;
 
         return (
             <View style={styles.view1}>
                 <View style={[Style.rowBetweenCenter, styles.view2]}>
-                    <Text style={styles.font1}>{Message.SEARCH_HISTORY}</Text>
+                    <Text style={[styles.font1,{color:themeColor}]}>{Message.SEARCH_HISTORY}</Text>
                     <TouchableHighlight
                         underlayColor={'transparent'}
                         onPress={() => this.clearStore(null)}>
@@ -262,6 +265,7 @@ function mapStateToProps(state) {
     return {
         nav: state.nav,
         home: state.home,
+        theme: state.theme,
     };
 }
 

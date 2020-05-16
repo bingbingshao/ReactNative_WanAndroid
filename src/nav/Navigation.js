@@ -48,117 +48,13 @@ import Login from '../view/login/Login';
 import Register from '../view/login/Register';
 
 
+import RootTabs from './BottomBar';
+
+
 const navHeight = Platform.OS === 'ios' ? ScreenUtil.scaleSizeH(35 * 2) : ScreenUtil.scaleSizeH(45 * 2);
 
 
-const RootTabs = createBottomTabNavigator(
-    {
-        Home: {
-            screen: Home,
-            navigationOptions: {
-                tabBarLabel: Message.HOME,
-                tabBarIcon: ({tintColor, focused}) => (
-                    <View>
-                        <FontAwesome
-                            name={'home'}
-                            color={tintColor}
-                            size={focused ? ScreenUtil.setSpFont(24) : ScreenUtil.setSpFont(22)}/>
-                    </View>
-                ),
-            },
-        },
-        Project: {
-            screen: Project,
-            navigationOptions: {
-                tabBarLabel: Message.PROJECT,
-                tabBarIcon: ({tintColor, focused}) => (
-                    <View>
-                        <FontAwesome
-                            name={'leanpub'}
-                            color={tintColor}
-                            size={focused ? ScreenUtil.setSpFont(22) : ScreenUtil.setSpFont(20)}/>
-                    </View>
-                ),
-            },
-        },
-        Square: {
-            screen: Square,
-            navigationOptions: {
-                tabBarLabel: Message.SQUARE,
-                tabBarIcon: ({tintColor, focused}) => (
-                    <View>
-                        <FontAwesome
-                            name={'th-large'}
-                            color={tintColor}
-                            size={focused ? ScreenUtil.setSpFont(22) : ScreenUtil.setSpFont(20)}/>
-                    </View>
-                ),
-            },
-        },
-        Account: {
-            screen: Account,
-            navigationOptions: {
-                tabBarLabel: Message.ACCOUNT,
-                tabBarIcon: ({tintColor, focused}) => (
-                    <View>
-                        <FontAwesome
-                            name={'wechat'}
-                            color={tintColor}
-                            size={focused ? ScreenUtil.setSpFont(20) : ScreenUtil.setSpFont(18)}/>
-                    </View>
-                ),
-            },
-        },
-        My: {
-            screen: My,
-            navigationOptions: {
-                tabBarLabel: Message.MY,
-                tabBarIcon: ({tintColor, focused}) => (
-                    <View>
-                        <FontAwesome
-                            name={'user'}
-                            color={tintColor}
-                            size={focused ? ScreenUtil.setSpFont(22) : ScreenUtil.setSpFont(20)}/>
-                    </View>
-                ),
-            },
-        },
-    },
-    {
-        swipeEnabled: true, // 是否允许横向滑动
-        initialRouteName: 'Home', // 设置默认的页面组件
-        lazy: true, // 在app打开的时候将底部标签栏全部加载，默认false,推荐改成true
-        tabBarPosition: 'bottom', // 设置tabbar的位置，iOS默认在底部，安卓默认在顶部。（属性值：'top'，'bottom')
-        initialRouteParams: {data: 12},
-        tabBarOptions: {
-            showIcon: true, // 是否显示图标，默认关闭。
-            showLabel: true, //是否显示label，默认开启。
-            // activeTintColor: Theme.themeColor,
-            activeTintColor: Theme.themeColor,
-            inactiveTintColor: Theme.unSelectColor,
-            // inactiveTintColor: Theme.unSelectColor,
-            indicatorStyle: {height: 0},
-            style: {
-                // marginTop:10,
-                padding: 0,
-                backgroundColor: '#fff',
-                height: navHeight,
-                zIndex: 0,
-                position: 'relative',
-                // borderTopWidth: 0,
-            },
-            labelStyle: {
-                fontSize: ScreenUtil.setSpFont(10),
-                paddingVertical: 0,
-                marginTop: -4,
-            },
-            iconStyle: {
-                marginTop: 0,
-            },
-        },
-        animationEnabled: true,
-    },
-);
+
 const Navigator = createStackNavigator(
     {
         /**

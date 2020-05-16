@@ -34,6 +34,7 @@ const Message = {
     MY_OPEN_SOURCE_NET: '开源网站',
     MY_JOIN_US: '关于我们',
     MY_SETTING: '系统设置',
+    MY_CHANGE_THEME:'修改主题',
 
     //搜索
     SEARCH_TIP: '输入关键字搜索',

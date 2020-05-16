@@ -108,10 +108,11 @@ class Article extends Component {
      */
     //顶部导航渲染
     _nav() {
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[Style.barView, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <TouchableHighlight
                         underlayColor={'transparent'}
                         onPress={() => this.props.goBackPage()}>
@@ -299,6 +300,7 @@ function mapStateToProps(state) {
         nav: state.nav,
         login: state.login,
         my: state.my,
+        theme: state.theme,
     };
 }
 

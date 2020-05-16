@@ -7,6 +7,9 @@
 import {takeLatest, put, takeEvery} from 'redux-saga/effects';
 import * as Types from '../../component/ActionTypes';
 
+//主题模块
+import {initThemeColor} from './theme/ThemeSaga'
+
 //登录模块
 import {login, register, logout} from './login/LoginSaga';
 //首页模块
@@ -41,6 +44,8 @@ import {
 
 
 export default function* rootSaga() {
+    //主题
+    yield takeLatest(Types.INIT_THEME_COLOR, initThemeColor);
     //登录
     yield takeLatest(Types.LOGIN, login);
     yield takeLatest(Types.REGISTER, register);

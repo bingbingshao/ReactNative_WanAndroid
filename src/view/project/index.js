@@ -149,12 +149,13 @@ class index extends Component {
      */
     //顶部导航渲染
     _nav() {
+        const {themeColor} = this.props.theme;
         const {menuList, menuSelectedId} = this.props.project;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
 
-                <View style={[Style.barView, Style.rowCenterCenter]}>
+                <View style={[Style.barView, Style.rowCenterCenter, {backgroundColor: themeColor}]}>
                     <ScrollView
                         ref={(view) => {
                             this.myScrollView = view;
@@ -362,6 +363,7 @@ function mapStateToProps(state) {
         nav: state.nav,
         project: state.project,
         login: state.login,
+        theme: state.theme,
     };
 }
 

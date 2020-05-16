@@ -77,7 +77,7 @@ class index extends Component {
         this.props.HomeStateChange({
             collectId: item.id,
             collectName: item.author ? item.author : item.shareUser ? item.shareUser : item.name,
-            collectLink: item.link ? item.link :item.url,
+            collectLink: item.link ? item.link : item.url,
         });
         // console.log("item",item)
         if (item.type == TypeId.NET) {  //网址
@@ -150,10 +150,11 @@ class index extends Component {
     //顶部导航渲染
     _nav() {
         const {menuList, menuSelectedId} = this.props.account;
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[Style.barView, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <ScrollView
                         ref={(view) => {
                             this.myScrollView = view;
@@ -202,6 +203,7 @@ class index extends Component {
     //数据列表
     _list() {
         const {dataList} = this.props.account;
+
         // console.log('articleList', articleList);
         return (
             <FlatList
@@ -348,6 +350,7 @@ function mapStateToProps(state) {
         nav: state.nav,
         account: state.account,
         login: state.login,
+        theme: state.theme
     };
 }
 

@@ -34,7 +34,7 @@ import {
 import {LoginStateChange} from '../../redux/action/login/LoginAction';
 import Loading from '../../component/Loading';
 import Swiper from 'react-native-swiper';
-import {deviceWidth, bannerHeight,IsIOS} from '../../component/ScreenUtil';
+import {deviceWidth, bannerHeight, IsIOS} from '../../component/ScreenUtil';
 import {BoxShadow} from 'react-native-shadow';
 import Store from 'react-native-simple-store';
 import Util from '../../component/Util';
@@ -192,10 +192,11 @@ class index extends Component {
      */
     //顶部导航渲染
     _nav() {
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[Style.barView, Style.rowBetweenCenter,{backgroundColor:themeColor}]}>
                     <Text style={Style.barTitle}>{Message.HOME}</Text>
                     <TouchableHighlight
                         underlayColor={'transparent'}
@@ -211,6 +212,7 @@ class index extends Component {
     //轮播图
     _banner() {
         const {bannerList} = this.props.home;
+        const {themeColor} = this.props.theme;
         return (
             <View style={styles.bannerContain}>
                 {
@@ -226,8 +228,8 @@ class index extends Component {
                                 horizontal={true}
                                 showsPagination={true}
                                 paginationStyle={styles.paginationStyle}
-                                dotStyle={styles.dotStyle}
-                                activeDotStyle={styles.activeDotStyle}
+                                dotStyle={[styles.dotStyle,{backgroundColor:themeColor}]}
+                                activeDotStyle={[styles.activeDotStyle,{backgroundColor:themeColor}]}
                             >
                                 {
                                     bannerList.map((data) => {
@@ -419,6 +421,7 @@ function mapStateToProps(state) {
         nav: state.nav,
         home: state.home,
         login: state.login,
+        theme: state.theme
     };
 }
 

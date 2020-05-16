@@ -10,6 +10,9 @@ import {rootCom, RootNavigator} from '../../nav/Navigation';
 //导航
 import NavigationReducer from './nav/NavigationReducer';
 
+//主题
+import ThemeReducer from './theme/ThemeReducer';
+
 //首页
 import HomeReducer from './home/HomeReducer';
 
@@ -46,6 +49,7 @@ const navReducer = (state = navState, action) => {
  */
 const index = combineReducers({
     nav: NavigationReducer,
+    theme: ThemeReducer,
     home: HomeReducer,
     project: ProjectReducer,
     square: SquareReducer,

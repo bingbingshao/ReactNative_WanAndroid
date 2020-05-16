@@ -189,10 +189,11 @@ class index extends Component {
     //顶部导航渲染
     _nav() {
         const {menuList, menuSelectedId} = this.props.square;
+        const {themeColor} = this.props.theme;
         return (
             <View>
-                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={Theme.themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter]}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <View style={[Style.barView, Style.rowBetweenCenter,{backgroundColor:themeColor}]}>
                     <Text style={Style.barTitle1}>{Message.SQUARE}</Text>
                     <View style={Style.rowCenterCenter}>
                         {
@@ -517,6 +518,7 @@ function mapStateToProps(state) {
         nav: state.nav,
         square: state.square,
         login: state.login,
+        theme: state.theme,
     };
 }
 
