@@ -11,6 +11,7 @@ import {
     Text,
     StyleSheet, StatusBar, TouchableHighlight, FlatList, RefreshControl,
     ScrollView, DeviceEventEmitter,
+    TouchableOpacity
 } from 'react-native';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
@@ -18,7 +19,7 @@ import Theme from '../../component/Theme';
 import Style from '../../css/Style';
 import Message from '../../component/Message';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import ScreenUtil, {deviceWidth} from '../../component/ScreenUtil';
+import ScreenUtil, {deviceWidth, statusBarHeight} from '../../component/ScreenUtil';
 import {SquareStateChange, SquareList, SquareNavigation, SquareSeries} from '../../redux/action/square/SquareAction';
 import * as TypeId from '../../component/TypeId';
 import Util from '../../component/Util';
@@ -34,11 +35,20 @@ import {
 } from '../../redux/action/home/HomeAction';
 import {goWebView, goSquareSeriesDetails, goLogin, goPublishArticle} from '../../redux/action/NavigationAction';
 import {Card} from 'react-native-shadow-cards';
+import ScrollableTabView, {ScrollableTabBar} from 'react-native-scrollable-tab-view';
+import {LargeList} from "react-native-largelist-v3";
+import {ListHeader} from "../../component/ListHeader";
+import {ListFooter} from "../../component/ListFooter";
+import MyScrollBar from "../../component/MyScrollBar";
+
 
 class index extends Component {
     constructor() {
         super();
-        this.state = {};
+        this.state = {
+            nowPage: 0,  //当前导航页
+            nowScroll: 0, //当前顶部tab滚动距离
+        };
     }
 
     //渲染前调用
@@ -53,11 +63,17 @@ class index extends Component {
             const {menuSelectedId} = this.props.square;
             this.start(menuSelectedId);
         });
+        this.listener = DeviceEventEmitter.addListener(TypeId.SQUARE_GET_SUCCESS, (param) => {
+            // console.log("SQUARE_GET_SUCCESS")
+            this._list.endRefresh();
+            this._list.endLoading();
+        });
     }
 
     //卸载前调用
     componentWillUnmount() {
         this.listener.remove();
+        this.timer && clearTimeout(this.timer);
     }
 
     /**
@@ -75,6 +91,30 @@ class index extends Component {
                 this.props.SquareNavigation();
                 break;
         }
+    }
+
+    //切换菜单
+    changeTab(obj) {
+        const {squareList, seriesList, navigationList} = this.props.square;
+        this.setState({
+            nowPage: obj.i
+        });
+        if (obj.i == 0 && squareList.length == 0) {
+            this.start(obj.i);
+        }
+        if (obj.i == 1 && seriesList.length == 0) {
+            this.start(obj.i);
+        }
+        if (obj.i == 2 && navigationList.length == 0) {
+            this.start(obj.i);
+        }
+    }
+
+    //记录tabScroll 是否滑动
+    onScrollable(e) {
+        this.setState({
+            nowScroll: e
+        })
     }
 
     //选择子菜单
@@ -168,20 +208,27 @@ class index extends Component {
 
     //跳转详情页面
     jumpWeb(data) {
-        this.props.HomeStateChange({
-            webData: data,
-        });
-        this.props.goWebView();
+        const {nowPage, nowScroll} = this.state;
+        if (nowPage == nowScroll) {
+            this.props.HomeStateChange({
+                webData: data,
+            });
+            this.props.goWebView();
+        }
     }
 
     //跳转体系详情页面
-    goSeriesDetails(data, id) {
+    goSeriesDetails(data, id, index) {
+
         this.props.SquareStateChange({
             seriesMenuList: data,
             seriesMenuSelected: id,
+            seriesMenuPage: index,
+            seriesArticleList: new Array(data.children.length),
         });
         this.props.goSquareSeriesDetails();
     }
+
 
     /**
      * 页面渲染
@@ -193,7 +240,7 @@ class index extends Component {
         return (
             <View>
                 <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter,{backgroundColor:themeColor}]}>
+                <View style={[Style.barView, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <Text style={Style.barTitle1}>{Message.SQUARE}</Text>
                     <View style={Style.rowCenterCenter}>
                         {
@@ -232,35 +279,94 @@ class index extends Component {
     }
 
 
-    //广场
-    _square() {
-        const {squareList} = this.props.square;
-        // console.log('articleList', articleList);
+    //内容
+    _contains() {
+        const {themeColor} = this.props.theme;
         return (
-            <FlatList
-                showsVerticalScrollIndicator={false}
-                data={squareList}
-                renderItem={({item}) => this._squareItem(item)}
-                refreshControl={
-                    <RefreshControl
-                        title={'Loading'}
-                        colors={[Theme.themeColor]}
-                        refreshing={false}
-                        onRefresh={() => {
-                            this._onRefresh();
-                        }}
-                    />
-                }
-                refreshing={false}
-                onEndReached={() => this._onLoadMore()}
-                onEndReachedThreshold={0.1}
-                //添加尾布局
-                ListFooterComponent={this._createListFooter.bind(this)}
-            />
-        );
+            <View style={{flex: 1, marginTop: statusBarHeight}}>
+                <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                <ScrollableTabView
+                    onScroll={(e) => this.onScrollable(e)}
+                    onChangeTab={(obj) => this.changeTab(obj)}
+                    style={{flex: 1}}
+                    renderTabBar={() =>
+                        <MyScrollBar
+                            style={[{borderBottomWidth: 0, backgroundColor: themeColor}]}
+                            textStyle={{fontSize: ScreenUtil.setSpFont(14), color: Theme.white}}
+                            underlineStyle={{
+                                marginBottom: ScreenUtil.scaleSizeW(10),
+                                backgroundColor: Theme.white,
+                                borderRadius: ScreenUtil.scaleSizeW(20),
+                            }}
+                        />
+                    }
+                >
+                    <View style={{flex: 1}} tabLabel={'广场'}>
+                        {this._square()}
+                    </View>
+                    <View style={{flex: 1}} tabLabel={'体系'}>
+                        {this._series()}
+                    </View>
+                    <View style={{flex: 1}} tabLabel={'导航'}>
+                        {this._navigation()}
+                    </View>
+                </ScrollableTabView>
+            </View>
+        )
     }
 
-    _squareItem(item) {
+
+    //广场
+    _square() {
+        const data = [];
+        const {squareList} = this.props.square;
+        data.push({items: squareList})
+
+        return (
+            <LargeList
+                ref={ref => (this._list = ref)}
+                style={styles.container}
+                data={data}
+                heightForSection={() => 0}
+                renderSection={this._renderSection}
+                refreshHeader={ListHeader}
+                loadingFooter={ListFooter}
+                allLoaded={this.state.allLoaded}
+                onLoading={() => {
+                    this._onLoadMore();
+                }}
+                renderIndexPath={this._renderIndexPath}
+                heightForIndexPath={() => ScreenUtil.scaleSizeH(190)}
+                renderEmpty={this._renderEmpty}
+                onRefresh={() => {
+                    this._onRefresh()
+                }}
+            />
+        )
+    }
+
+    //数据为空时
+    _renderEmpty = () => {
+        return (
+            <View style={styles.empty}>
+                <Text>{'没有数据'}</Text>
+            </View>
+        );
+    };
+
+    //分区渲染 置空
+    _renderSection = (section) => {
+
+        return (
+            <View style={{height: 0}}>
+            </View>
+        );
+    };
+
+
+    _renderIndexPath = ({section: section, row: row}) => {
+        const {squareList} = this.props.square;
+        let item = squareList[row];
         const shadowOpt = {
             width: deviceWidth - ScreenUtil.scaleSizeW(20),
             height: ScreenUtil.scaleSizeH(180),
@@ -277,8 +383,7 @@ class index extends Component {
             title.length > 35 ? title.slice(0, 35) + '..' : title : '';
         return (
             <View style={[styles.itemView, Style.rowCenterCenter]}>
-                <TouchableHighlight
-                    underLayColor={'transparent'}
+                <TouchableOpacity
                     onPress={() => this.jumpWeb(item)}
                 >
                     <BoxShadow setting={shadowOpt}>
@@ -317,24 +422,11 @@ class index extends Component {
                             </View>
                         </View>
                     </BoxShadow>
-                </TouchableHighlight>
+                </TouchableOpacity>
             </View>
         );
     }
 
-    /**
-     * 创建尾部布局
-     */
-    _createListFooter = () => {
-        const {font} = this.props.square;
-        return (
-            <View style={Style.footerView}>
-                <Text style={Style.footerFont}>
-                    {font === 0 ? '' : font === 1 ? '正在加载更多数据...' : '没有更多数据了'}
-                </Text>
-            </View>
-        );
-    };
     /**
      * 下啦刷新
      * @private
@@ -410,7 +502,7 @@ class index extends Component {
                                                 return (
                                                     <TouchableHighlight
                                                         underlayColor={'transparent'}
-                                                        onPress={() => this.goSeriesDetails(data, info.id)}>
+                                                        onPress={() => this.goSeriesDetails(data, info.id, i)}>
                                                         <View style={[Style.rowCenterCenter, styles.navigationView1]}>
                                                             <Text style={fontStyle}>{info.name}</Text>
                                                         </View>
@@ -497,17 +589,10 @@ class index extends Component {
     render() {
         const {menuSelectedId} = this.props.square;
         return (
-            <View>
-                {this._nav()}
-                {
-                    menuSelectedId == TypeId.SQUARE ? //广场
-                        this._square()
-                        : menuSelectedId == TypeId.SERIES ? //体系
-                        this._series()
-                        : menuSelectedId == TypeId.NAVIGATION ? //导航
-                            this._navigation() : null
-                }
-                <Loading isShow={this.props.square.isLoading}/>
+            <View style={{flex: 1}}>
+                {/*{this._nav()}*/}
+                {this._contains()}
+                {/*<Loading isShow={this.props.square.isLoading}/>*/}
             </View>
         );
     }
@@ -543,6 +628,34 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps, mapDispatchToProps)(index);
 
 const styles = StyleSheet.create({
+
+    container: {
+        flex: 1,
+    },
+    section: {
+        flex: 1,
+        backgroundColor: "gray",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    row: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    line: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: 1,
+        backgroundColor: "#EEE"
+    },
+    empty: {
+        marginVertical: 20,
+        alignSelf: "center"
+    },
+
     itemView: {
         marginTop: ScreenUtil.scaleSizeH(10),
     },

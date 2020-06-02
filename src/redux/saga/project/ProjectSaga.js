@@ -4,7 +4,7 @@
  * @name: ProjectSaga
  * @description：ProjectSaga
  */
-
+import {DeviceEventEmitter} from 'react-native';
 import {put, select, call, delay} from 'redux-saga/dist/redux-saga-effects-npm-proxy.esm';
 import {ProjectStateChange} from '../../action/project/ProjectAction';
 import {getData, getParamsData, postFormData} from '../../../component/NetUtils';
@@ -13,7 +13,6 @@ import Util from '../../../component/Util';
 import Message from '../../../component/Message';
 import * as TypeId from '../../../component/TypeId';
 import Store from 'react-native-simple-store';
-import {DeviceEventEmitter} from 'react-native';
 import {goMy} from '../../action/NavigationAction';
 
 /**
@@ -41,6 +40,7 @@ export function* getProjectMenu() {
         yield put(ProjectStateChange({
             menuList: response.data,
             menuSelectedId: response.data[0].id,
+            dataList: new Array(response.data.length),
         }));
         yield* getProjectList();
     } else {  //获取失败
@@ -57,13 +57,15 @@ export function* getProjectList() {
     yield put(ProjectStateChange({
         isLoading: true,
     }));
-    const {isRefresh, page, menuSelectedId, dataList} = yield select(state => state.project);
+    const {isRefresh, page, menuSelectedId, dataList, nowChildPage} = yield select(state => state.project);
 
     let params = {cid: menuSelectedId};
     let response = yield call(getParamsData.bind(this, {
         requestData: params,
         url: API.PROJECT_LIST + page + API.HOME_ARTICLE_LIST_END,
     }));
+
+    DeviceEventEmitter.emit(TypeId.PROJECT_GET_SUCCESS);
 
     // console.log('getProjectList', response);
 
@@ -78,14 +80,16 @@ export function* getProjectList() {
 
     if (response.errorCode == TypeId.ERROR_CODE_1) {  //获取数据成功
         if (isRefresh) {  //是刷新
-            yield put(ProjectStateChange({
-                dataList: response.data.datas,
-            }));
+            dataList[nowChildPage] = response.data.datas;
         } else {
-            yield put(ProjectStateChange({
-                dataList: dataList.concat(response.data.datas),
-            }));
+
+            let data = dataList[nowChildPage];
+
+            dataList[nowChildPage] = data.concat(response.data.datas);
         }
+        yield put(ProjectStateChange({
+            dataList: dataList,
+        }));
         yield put(ProjectStateChange({
             font: page + 1 < response.data.pageCount ? 0 : 2,
             isRefresh: false,

@@ -18,16 +18,17 @@ const initialState = {
     menuSelectedId: TypeId.SQUARE,
     squareList: [],
     page: 0,
-    font: 0,
+    font: 1,
     isRefresh: true,
 
     seriesList: [],
     seriesMenuList: [],
     seriesMenuSelected: '',
     seriesPage: 0,
-    seriesFont: 0,
+    seriesFont: 1,
     seriesIsRefresh: true,
     seriesArticleList: [],
+    seriesMenuPage:0,
 
     navigationList: [],
 };

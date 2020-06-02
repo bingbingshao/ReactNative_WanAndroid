@@ -15,6 +15,7 @@ const initialState = {
     page: 0,
     font: 0,
     isRefresh: true,
+    nowChildPage: 0,
 };
 
 const ProjectReducer = (state = initialState, action) => {

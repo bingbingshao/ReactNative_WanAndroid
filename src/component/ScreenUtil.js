@@ -46,7 +46,6 @@ export const defaultBarHeight = Platform.OS === 'ios' ? deviceHeight === 812 ? 6
 export const statusBarHeight = Platform.OS === 'ios' ? deviceHeight === 812 ? 30 : 20 : StatusBarManager.HEIGHT;  //状态栏高度
 let fontScale = PixelRatio.getFontScale();                      //返回字体大小缩放比例
 let pixelRatio = PixelRatio.get();      //当前设备的像素密度
-console.log("pixelRatio", pixelRatio)
 
 const screenPxW = PixelRatio.getPixelSizeForLayoutSize(deviceWidth);
 const screenPxH = PixelRatio.getPixelSizeForLayoutSize(deviceHeight);

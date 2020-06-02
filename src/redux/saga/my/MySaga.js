@@ -104,6 +104,7 @@ export function* getMyIntegral() {
 
 
     // console.log('getMyIntegral', response);
+    DeviceEventEmitter.emit(TypeId.INTEGRAL_GET_SUCCESS); //积分列表数据获取成功
 
     yield put(MyStateChange({
         isLoading: false,
@@ -147,7 +148,10 @@ export function* getMyIntegralHistory() {
     let response = yield call(getData.bind(this, {url: API.MY_INTEGRAL_HISTORY + page2 + API.HOME_ARTICLE_LIST_END}));
 
 
-    console.log('getMyIntegral', response);
+    DeviceEventEmitter.emit(TypeId.INTEGRAL_HISTORY_GET_SUCCESS); //积分历史列表数据获取成功
+
+
+    // console.log('getMyIntegral', response);
 
     yield put(MyStateChange({
         isLoading: false,
@@ -270,7 +274,9 @@ export function* getMyArticle() {
     let response = yield call(getData.bind(this, {url: API.MY_ARTICLE + page4 + API.HOME_ARTICLE_LIST_END}));
 
 
-    console.log('getMyArticle', response);
+    DeviceEventEmitter.emit(TypeId.MY_ARTICLE_SUCCESS); //积分历史列表数据获取成功
+    //
+    // console.log('getMyArticle', response);
 
     yield put(MyStateChange({
         isLoading: false,

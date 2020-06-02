@@ -12,7 +12,7 @@ import {
     Text,
     StyleSheet,
     TouchableHighlight,
-    ScrollView, FlatList, RefreshControl,
+    ScrollView, FlatList, RefreshControl, DeviceEventEmitter,
 } from 'react-native';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
@@ -33,6 +33,9 @@ import Loading from '../../component/Loading';
 import {BoxShadow} from 'react-native-shadow';
 import Util from '../../component/Util';
 import * as TypeId from '../../component/TypeId';
+import {LargeList} from "react-native-largelist-v3";
+import {ListHeader} from "../../component/ListHeader";
+import {ListFooter} from "../../component/ListFooter";
 
 class SearchResult extends Component {
     constructor() {
@@ -47,10 +50,15 @@ class SearchResult extends Component {
 
     //渲染后调用
     componentDidMount() {
+        this.listener = DeviceEventEmitter.addListener(TypeId.SEARCH_GET_SUCCESS, (param) => {
+            this._list.endRefresh();
+            this._list.endLoading();
+        });
     }
 
     //卸载前调用
     componentWillUnmount() {
+        this.listener.remove();
         this.props.HomeStateChange({
             searchText: '',
             searchData: [],
@@ -173,35 +181,39 @@ class SearchResult extends Component {
     }
 
     //数据列表
-    _list() {
+    _listData() {
+        const data = [];
         const {searchData} = this.props.home;
+        data.push({items: searchData})
+
         return (
-            <FlatList
-                showsVerticalScrollIndicator={false}
-                data={searchData}
-                renderItem={({item}) => this._listItem(item)}
-                refreshControl={
-                    <RefreshControl
-                        title={'Loading'}
-                        colors={[Theme.themeColor]}
-                        refreshing={false}
-                        onRefresh={() => {
-                            this._onRefresh();
-                        }}
-                    />
-                }
-                refreshing={false}
-                onEndReached={() => this._onLoadMore()}
-                onEndReachedThreshold={0.1}
-                //添加尾布局
-                ListFooterComponent={this._createListFooter.bind(this)}
+            <LargeList
+                ref={ref => (this._list = ref)}
+                style={styles.container}
+                data={data}
+                heightForSection={() => 0}
+                renderSection={this._renderSection}
+                refreshHeader={ListHeader}
+                loadingFooter={ListFooter}
+                allLoaded={this.state.allLoaded}
+                onLoading={() => {
+                    this._onLoadMore();
+                }}
+                renderIndexPath={this._renderIndexPath}
+                heightForIndexPath={() => ScreenUtil.scaleSizeH(190)}
+                renderEmpty={this._renderEmpty}
+                onRefresh={() => {
+                    this._onRefresh()
+                }}
             />
-        );
+        )
     }
 
 
     //数据展示
-    _listItem(item) {
+    _renderIndexPath = ({section: section, row: row}) => {
+        const {searchData} = this.props.home;
+        let item = searchData[row];
         const shadowOpt = {
             width: deviceWidth - ScreenUtil.scaleSizeW(20),
             height: ScreenUtil.scaleSizeH(180),
@@ -280,16 +292,21 @@ class SearchResult extends Component {
         );
     }
 
-    /**
-     * 创建尾部布局
-     */
-    _createListFooter = () => {
-        const {searchFont} = this.props.home;
+
+    //数据为空时
+    _renderEmpty = () => {
         return (
-            <View style={Style.footerView}>
-                <Text style={Style.footerFont}>
-                    {searchFont === 0 ? '' : searchFont === 1 ? '正在加载更多数据...' : '没有更多数据了'}
-                </Text>
+            <View style={styles.empty}>
+                <Text>{'没有数据'}</Text>
+            </View>
+        );
+    };
+
+    //分区渲染 置空
+    _renderSection = (section) => {
+
+        return (
+            <View style={{height: 0}}>
             </View>
         );
     };
@@ -324,8 +341,8 @@ class SearchResult extends Component {
         return (
             <View style={styles.contains}>
                 {this._nav()}
-                {this._list()}
-                <Loading isShow={this.props.home.isLoading}/>
+                {this._listData()}
+                {/*<Loading isShow={this.props.home.isLoading}/>*/}
             </View>
         );
     }
@@ -356,6 +373,35 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps, mapDispatchToProps)(SearchResult);
 
 const styles = StyleSheet.create({
+
+
+    container: {
+        flex: 1,
+    },
+    section: {
+        flex: 1,
+        backgroundColor: "gray",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    row: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    line: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: 1,
+        backgroundColor: "#EEE"
+    },
+    empty: {
+        marginVertical: 20,
+        alignSelf: "center"
+    },
+
     contains: {
         flex: 1,
         backgroundColor: Theme.color_3,

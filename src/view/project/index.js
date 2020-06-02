@@ -10,6 +10,7 @@ import {
     Image,
     Text,
     StyleSheet, StatusBar, TouchableHighlight, ScrollView, FlatList, RefreshControl, DeviceEventEmitter,
+    TouchableOpacity
 } from 'react-native';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
@@ -17,7 +18,7 @@ import Theme from '../../component/Theme';
 import Style from '../../css/Style';
 import Message from '../../component/Message';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import ScreenUtil, {deviceWidth} from '../../component/ScreenUtil';
+import ScreenUtil, {deviceWidth, statusBarHeight} from '../../component/ScreenUtil';
 import {ProjectList, ProjectMenu, ProjectStateChange} from '../../redux/action/project/ProjectAction';
 import {goWebView} from '../../redux/action/NavigationAction';
 import Loading from '../../component/Loading';
@@ -31,11 +32,18 @@ import {
     HomeStateChange,
 } from '../../redux/action/home/HomeAction';
 import * as TypeId from '../../component/TypeId';
+import {LargeList} from "react-native-largelist-v3";
+import {ListHeader} from "../../component/ListHeader";
+import {ListFooter} from "../../component/ListFooter";
+import ScrollableTabView, {ScrollableTabBar} from "react-native-scrollable-tab-view";
 
 class index extends Component {
     constructor() {
         super();
-        this.state = {};
+        this.state = {
+            nowPage: 0,  //当前导航页
+            nowScroll: 0, //当前顶部tab滚动距离
+        };
     }
 
     //渲染前调用
@@ -47,6 +55,10 @@ class index extends Component {
     componentDidMount() {
         this.listener = DeviceEventEmitter.addListener(TypeId.LOGIN_SUCCESS, (param) => {
             this._onRefresh();
+        });
+        this.listener = DeviceEventEmitter.addListener(TypeId.PROJECT_GET_SUCCESS, (param) => {  //触发关闭刷新或加载
+            this._list.endRefresh();
+            this._list.endLoading();
         });
     }
 
@@ -64,6 +76,29 @@ class index extends Component {
             menuSelectedId: data.id,
         });
         this._onRefresh();
+    }
+
+    //记录tabScroll 是否滑动
+    onScrollable(e) {
+        this.setState({
+            nowScroll: e
+        })
+    }
+
+    //切换菜单
+    changeTab(obj) {
+        const {menuList, menuSelectedId, dataList} = this.props.project;
+
+        this.setState({
+            nowPage: obj.i
+        });
+        this.props.ProjectStateChange({
+            nowChildPage: obj.i,
+        });
+
+        if (dataList[obj.i] == undefined) {
+            this.selectMenu(menuList[obj.i]);
+        }
     }
 
     //收藏文章
@@ -138,10 +173,13 @@ class index extends Component {
 
     //跳转详情页面
     jumpWeb(data) {
-        this.props.HomeStateChange({
-            webData: data,
-        });
-        this.props.goWebView();
+        const {nowPage, nowScroll} = this.state;
+        if (nowPage == nowScroll) {
+            this.props.HomeStateChange({
+                webData: data,
+            });
+            this.props.goWebView();
+        }
     }
 
     /**
@@ -201,37 +239,106 @@ class index extends Component {
         );
     }
 
-    //数据列表
-    _list() {
-        const {dataList} = this.props.project;
-        // console.log('articleList', articleList);
-        return (
-            <FlatList
-                showsVerticalScrollIndicator={false}
-                data={dataList}
-                renderItem={({item}) => this._listItem(item)}
-                refreshControl={
-                    <RefreshControl
-                        title={'Loading'}
-                        colors={[Theme.themeColor]}
-                        refreshing={false}
-                        onRefresh={() => {
-                            this._onRefresh();
-                        }}
-                    />
-                }
-                refreshing={false}
-                onEndReached={() => this._onLoadMore()}
-                onEndReachedThreshold={0.1}
-                //添加尾布局
-                ListFooterComponent={this._createListFooter.bind(this)}
-            />
-        );
+    _contains() {
+        const {themeColor} = this.props.theme;
+        const {menuList, menuSelectedId} = this.props.project;
+        if (menuList && menuList.length > 0) {
+            return (
+                <View style={{flex: 1, marginTop: statusBarHeight}}>
+                    <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
+                    <ScrollableTabView
+                        onScroll={(e) => this.onScrollable(e)}
+                        onChangeTab={(obj) => this.changeTab(obj)}
+                        style={{flex: 1}}
+                        renderTabBar={() =>
+                            <ScrollableTabBar
+                                style={[{borderBottomWidth: 0, backgroundColor: themeColor}]}
+                                textStyle={{fontSize: ScreenUtil.setSpFont(14), color: Theme.white}}
+                                underlineStyle={{
+                                    marginBottom: ScreenUtil.scaleSizeW(10),
+                                    backgroundColor: Theme.white,
+                                    borderRadius: ScreenUtil.scaleSizeW(20),
+                                }}
+                            />
+                        }
+                    >
+                        {
+                            menuList.map((data, i) => {
+                                return (
+                                    <View style={{flex: 1}} tabLabel={data.name}>
+                                        {this._listData()}
+                                    </View>
+                                )
+                            })
+                        }
+                    </ScrollableTabView>
+                </View>
+            )
+        } else {
+            return (
+                <View style={styles.empty}>
+                    <Text>{'没有数据'}</Text>
+                </View>
+            )
+        }
+
     }
 
+    //数据列表
+    _listData() {
+        const {dataList, nowChildPage} = this.props.project;
+        const data = [];
+        if (dataList[nowChildPage] != undefined) {
+            data.push({items: dataList[nowChildPage]})
+        }
 
-    //数据展示
-    _listItem(item) {
+        return (
+            <LargeList
+                ref={ref => (this._list = ref)}
+                style={styles.container}
+                data={data}
+                heightForSection={() => 0}
+                renderSection={this._renderSection}
+                renderHeader={this._banner}
+                refreshHeader={ListHeader}
+                loadingFooter={ListFooter}
+                allLoaded={this.state.allLoaded}
+                onLoading={() => {
+                    this._onLoadMore();
+                }}
+                renderIndexPath={this._renderIndexPath}
+                heightForIndexPath={() => ScreenUtil.scaleSizeH(308)}
+                renderEmpty={this._renderEmpty}
+                onRefresh={() => {
+                    this._onRefresh()
+                }}
+            />
+        )
+    }
+
+    //数据为空时
+    _renderEmpty = () => {
+        return (
+            <View style={styles.empty}>
+                <Text>{'没有数据'}</Text>
+            </View>
+        );
+    };
+
+    //分区渲染 置空
+    _renderSection = (section) => {
+
+        return (
+            <View style={{height: 0}}>
+            </View>
+        );
+    };
+
+
+    _renderIndexPath = ({section: section, row: row,}) => {
+        const {dataList, nowChildPage} = this.props.project;
+        let data = dataList[nowChildPage];
+        let item = data[row];
         const shadowOpt = {
             width: deviceWidth - ScreenUtil.scaleSizeW(20),
             height: ScreenUtil.scaleSizeH(300),
@@ -255,10 +362,7 @@ class index extends Component {
                 : content.length > 55 ? content.slice(0, 55) + '..' : content : '';
         return (
             <View style={[styles.itemView, Style.rowCenterCenter]}>
-                <TouchableHighlight
-                    underLayColor={'transparent'}
-                    onPress={() => this.jumpWeb(item)}
-                >
+                <TouchableOpacity underLayColor={'transparent'}>
                     <BoxShadow setting={shadowOpt}>
                         <View style={[styles.itemView1, Style.columnBetween]}>
                             <View style={[Style.rowBetweenCenter, styles.itemView2]}>
@@ -301,24 +405,11 @@ class index extends Component {
                             </View>
                         </View>
                     </BoxShadow>
-                </TouchableHighlight>
+                </TouchableOpacity>
             </View>
         );
     }
 
-    /**
-     * 创建尾部布局
-     */
-    _createListFooter = () => {
-        const {font} = this.props.project;
-        return (
-            <View style={Style.footerView}>
-                <Text style={Style.footerFont}>
-                    {font === 0 ? '' : font === 1 ? '正在加载更多数据...' : '没有更多数据了'}
-                </Text>
-            </View>
-        );
-    };
     /**
      * 下啦刷新
      * @private
@@ -328,7 +419,7 @@ class index extends Component {
             page: 1,
             font: 0,
             isRefresh: true,
-            dataList: [],
+            // dataList: [],
         });
         this.props.ProjectList();
     };
@@ -349,10 +440,11 @@ class index extends Component {
 
     render() {
         return (
-            <View>
-                {this._nav()}
-                {this._list()}
-                <Loading isShow={this.props.project.isLoading}/>
+            <View style={{flex: 1}}>
+                {/*{this._nav()}*/}
+                {this._contains()}
+                {/*{this._listData()}*/}
+                {/*<Loading isShow={this.props.project.isLoading}/>*/}
             </View>
         );
     }
@@ -384,6 +476,34 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps, mapDispatchToProps)(index);
 
 const styles = StyleSheet.create({
+
+    container: {
+        flex: 1,
+    },
+    section: {
+        flex: 1,
+        backgroundColor: "gray",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    row: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    line: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: 1,
+        backgroundColor: "#EEE"
+    },
+    empty: {
+        marginVertical: 20,
+        alignSelf: "center"
+    },
+
     itemView: {
         marginTop: ScreenUtil.scaleSizeH(10),
     },

@@ -26,7 +26,7 @@ export function saveThemeColor(themeColor) {
 export async function getThemeColor() {
     let color = await Store.get(TypeId.THEME_COLOR)
         .then((res) => {
-            console.log('res', res);
+            // console.log('res', res);
             if (res == null || res == undefined) {
                 return AllThemeColor.Default;
             }

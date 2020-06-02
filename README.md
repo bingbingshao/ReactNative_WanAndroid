@@ -59,6 +59,14 @@
 >
 >npm install  redux-saga：异步处理工具
 
+> 组件记录修改
+> react-native-spring-scrollview
+> 修改：SpringScrollView.js
+>import * as TextInputState from "react-native/lib/TextInputState";
+>换-->
+>import * as TextInputState from "react-native/Libraries/Components/TextInput/TextInputState";
+>链接：https://github.com/bolan9999/react-native-largelist/issues/369
+
 ### 4、目录格式
 
 <div>

@@ -4,6 +4,7 @@
  * @name: HomeSaga
  * @description：HomeSaga
  */
+import {DeviceEventEmitter} from 'react-native';
 import {put, select, call, delay} from 'redux-saga/dist/redux-saga-effects-npm-proxy.esm';
 import {getData, postFormData, postFormDataToken, postJson} from '../../../component/NetUtils';
 import API from '../../../component/Api';
@@ -50,6 +51,8 @@ export function* getHomeArticle() {
     let response = yield call(getData.bind(this, {url: API.HOME_ARTICLE_LIST + page + API.HOME_ARTICLE_LIST_END}));
 
     // console.log('getHomeArticle', response);
+
+    DeviceEventEmitter.emit(TypeId.HOME_GET_SUCCESS); //首页数据获取成功
 
     yield put(HomeStateChange({
         isLoading: false,
@@ -157,6 +160,8 @@ export function* getSearchData() {
         requestData: formData,
         url: API.SEARCH_DATA + searchPage + API.HOME_ARTICLE_LIST_END,
     }));
+
+    DeviceEventEmitter.emit(TypeId.SEARCH_GET_SUCCESS); //首页搜索数据获取成功
 
 
     // console.log('getSearchData', response);

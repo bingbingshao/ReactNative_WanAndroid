@@ -4,6 +4,7 @@
  * @name: SquareSaga
  * @description：SquareSaga
  */
+import {DeviceEventEmitter} from 'react-native';
 import {put, select, call, delay} from 'redux-saga/dist/redux-saga-effects-npm-proxy.esm';
 import {SquareStateChange} from '../../action/square/SquareAction';
 import {getData, getParamsData} from '../../../component/NetUtils';
@@ -12,6 +13,7 @@ import Util from '../../../component/Util';
 import Message from '../../../component/Message';
 import * as TypeId from '../../../component/TypeId';
 import {getArticleTop} from '../home/HomeSaga';
+import {ProjectStateChange} from "../../action/project/ProjectAction";
 
 /**
  * 获取广场数据列表
@@ -27,6 +29,10 @@ export function* getSquareList() {
 
     // console.log('getSquareList', response);
 
+
+    DeviceEventEmitter.emit(TypeId.SQUARE_GET_SUCCESS); //广场数据获取成功
+
+
     yield put(SquareStateChange({
         isLoading: false,
     }));
@@ -37,6 +43,7 @@ export function* getSquareList() {
     }
 
     if (response.errorCode == TypeId.ERROR_CODE_1) {  //获取数据成功
+
         if (isRefresh) { //是刷新
             yield put(SquareStateChange({
                 squareList: response.data.datas,
@@ -94,7 +101,7 @@ export function* getSquareSeriesDetails() {
     yield put(SquareStateChange({
         isLoading: true,
     }));
-    const {seriesMenuSelected, seriesPage, seriesFont, seriesIsRefresh, seriesArticleList} = yield select(state => state.square);
+    const {seriesMenuSelected, seriesPage, seriesFont, seriesMenuPage, seriesIsRefresh, seriesArticleList,} = yield select(state => state.square);
 
     let params = {cid: seriesMenuSelected};
     let response = yield call(getParamsData.bind(this, {
@@ -102,8 +109,11 @@ export function* getSquareSeriesDetails() {
         url: API.SQUARE_SERIES_LIST + seriesPage + API.HOME_ARTICLE_LIST_END,
     }));
 
+    DeviceEventEmitter.emit(TypeId.SQUARE_SERIES_GET_SUCCESS); //体系数据获取成功
 
-    console.log('getSquareSeriesDetails', response);
+
+    console.log('seriesArticleList', seriesArticleList);
+    console.log('params', params);
 
     yield put(SquareStateChange({
         isLoading: false,
@@ -114,15 +124,16 @@ export function* getSquareSeriesDetails() {
         return;
     }
     if (response.errorCode == TypeId.ERROR_CODE_1) {  //获取数据成功
-        if (seriesIsRefresh) { //刷新
-            yield put(SquareStateChange({
-                seriesArticleList: response.data.datas,
-            }));
+        if (seriesIsRefresh) {  //是刷新
+            seriesArticleList[seriesMenuPage] = response.data.datas;
         } else {
-            yield put(SquareStateChange({
-                seriesArticleList: seriesArticleList.concat(response.data.datas),
-            }));
+            let data = seriesArticleList[seriesMenuPage];
+            seriesArticleList[seriesMenuPage] = data.concat(response.data.datas);
         }
+        yield put(ProjectStateChange({
+            seriesArticleList: seriesArticleList,
+        }));
+
         yield put(SquareStateChange({
             seriesFont: seriesPage + 1 < response.data.pageCount ? 0 : 2,
             seriesIsRefresh: false,

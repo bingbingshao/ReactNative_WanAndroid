@@ -33,6 +33,9 @@ import {MyStateChange, MyArticle, MyArticleDelete} from '../../redux/action/my/M
 import {Card} from 'react-native-shadow-cards';
 import Loading from '../../component/Loading';
 import * as TypeId from '../../component/TypeId';
+import {LargeList} from "react-native-largelist-v3";
+import {ListHeader} from "../../component/ListHeader";
+import {ListFooter} from "../../component/ListFooter";
 
 class Article extends Component {
     constructor() {
@@ -49,6 +52,11 @@ class Article extends Component {
     componentDidMount() {
         this.listener = DeviceEventEmitter.addListener(TypeId.ARTICLE_SUCCESS, (param) => {
             this._onRefresh();
+        });
+
+        this.listener = DeviceEventEmitter.addListener(TypeId.MY_ARTICLE_SUCCESS, (param) => {  //触发关闭刷新或加载
+            this._list.endRefresh();
+            this._list.endLoading();
         });
     }
 
@@ -134,35 +142,58 @@ class Article extends Component {
     }
 
     //数据列表
-    _list() {
+    _listContains() {
         const {ArticleList} = this.props.my;
+        const data = [];
+        data.push({items: ArticleList})
+
         return (
-            <FlatList
-                showsVerticalScrollIndicator={false}
-                data={ArticleList}
-                renderItem={({item}) => this._listItem(item)}
-                refreshControl={
-                    <RefreshControl
-                        title={'Loading'}
-                        colors={[Theme.themeColor]}
-                        refreshing={false}
-                        onRefresh={() => {
-                            this._onRefresh();
-                        }}
-                    />
-                }
-                refreshing={false}
-                onEndReached={() => this._onLoadMore()}
-                onEndReachedThreshold={0.1}
-                //添加尾布局
-                ListFooterComponent={this._createListFooter.bind(this)}
+            <LargeList
+                ref={ref => (this._list = ref)}
+                style={styles.container}
+                data={data}
+                bounces={true}
+                heightForSection={() => 0}
+                renderSection={this._renderSection}
+                renderHeader={this._banner}
+                refreshHeader={ListHeader}
+                loadingFooter={ListFooter}
+                allLoaded={this.state.allLoaded}
+                onLoading={() => {
+                    this._onLoadMore();
+                }}
+                renderIndexPath={this._renderIndexPath}
+                heightForIndexPath={() => ScreenUtil.scaleSizeH(120)}
+                renderEmpty={this._renderEmpty}
+                onRefresh={() => {
+                    this._onRefresh()
+                }}
             />
-        );
+        )
     }
 
+    //数据为空时
+    _renderEmpty = () => {
+        return (
+            <View style={styles.empty}>
+                <Text>{'没有数据'}</Text>
+            </View>
+        );
+    };
 
-    //数据展示
-    _listItem(item) {
+    //分区渲染 置空
+    _renderSection = (section) => {
+
+        return (
+            <View style={{height: 0}}>
+            </View>
+        );
+    };
+
+
+    _renderIndexPath = ({section: section, row: row}) => {
+        const {ArticleList} = this.props.my;
+        let item = ArticleList[row];
         let title = Util.filterHTMLTag(item.title);
         title = title ?
             title.length > 35 ? title.slice(0, 35) + '..' : title : '';
@@ -197,20 +228,6 @@ class Article extends Component {
             </View>
         );
     }
-
-    /**
-     * 创建尾部布局
-     */
-    _createListFooter = () => {
-        const {font4} = this.props.my;
-        return (
-            <View style={Style.footerView}>
-                <Text style={Style.footerFont}>
-                    {font4 === 0 ? '' : font4 === 1 ? '正在加载更多数据...' : '没有更多数据了'}
-                </Text>
-            </View>
-        );
-    };
     /**
      * 下啦刷新
      * @private
@@ -287,7 +304,7 @@ class Article extends Component {
         return (
             <View style={styles.contains}>
                 {this._nav()}
-                {this._list()}
+                {this._listContains()}
                 {this._modal()}
                 <Loading isShow={this.props.my.isLoading}/>
             </View>
@@ -320,6 +337,34 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps, mapDispatchToProps)(Article);
 
 const styles = StyleSheet.create({
+
+    container: {
+        flex: 1,
+    },
+    section: {
+        flex: 1,
+        backgroundColor: "gray",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    row: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    line: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: 1,
+        backgroundColor: "#EEE"
+    },
+    empty: {
+        marginVertical: 20,
+        alignSelf: "center"
+    },
+
     contains: {
         flex: 1,
         backgroundColor: Theme.white,
@@ -382,6 +427,7 @@ const styles = StyleSheet.create({
         borderRadius: ScreenUtil.scaleSizeW(10),
         backgroundColor: Theme.color_1,
         marginTop: ScreenUtil.scaleSizeH(50),
+        marginBottom: ScreenUtil.scaleSizeH(20),
     },
     buttonView2: {
         width: ScreenUtil.scaleSizeW(200),
@@ -389,5 +435,6 @@ const styles = StyleSheet.create({
         borderRadius: ScreenUtil.scaleSizeW(10),
         backgroundColor: Theme.themeColor,
         marginTop: ScreenUtil.scaleSizeH(50),
+        marginBottom: ScreenUtil.scaleSizeH(20),
     },
 });

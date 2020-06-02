@@ -9,7 +9,10 @@ import {
     View,
     Image,
     Text,
-    StyleSheet, StatusBar, TouchableHighlight, FlatList, RefreshControl,
+    StyleSheet,
+    StatusBar, TouchableHighlight, FlatList, RefreshControl,
+    DeviceEventEmitter,
+    TouchableOpacity
 } from 'react-native';
 import Theme from '../../component/Theme';
 import Style from '../../css/Style';
@@ -22,6 +25,10 @@ import {goBackPage} from '../../redux/action/NavigationAction';
 import {Card} from 'react-native-shadow-cards';
 import Loading from '../../component/Loading';
 import {MyStateChange, MyIntegralHistory} from '../../redux/action/my/MyAction';
+import * as TypeId from "../../component/TypeId";
+import {LargeList} from "react-native-largelist-v3";
+import {ListHeader} from "../../component/ListHeader";
+import {ListFooter} from "../../component/ListFooter";
 
 class IntegralHistory extends Component {
     constructor() {
@@ -36,6 +43,11 @@ class IntegralHistory extends Component {
 
     //渲染后调用
     componentDidMount() {
+        this.listener = DeviceEventEmitter.addListener(TypeId.INTEGRAL_HISTORY_GET_SUCCESS, (param) => {
+            // console.log("SQUARE_GET_SUCCESS")
+            this._list.endRefresh();
+            this._list.endLoading();
+        });
     }
 
     //卸载前调用
@@ -61,12 +73,12 @@ class IntegralHistory extends Component {
         return (
             <View>
                 <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter,{backgroundColor:themeColor}]}>
+                <View style={[Style.barView, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <TouchableHighlight
                         underlayColor={'transparent'}
                         onPress={() => this.props.goBackPage()}>
                         <View style={Style.rowCenterCenter}>
-          <AntDesign name={'arrowleft'} color={Theme.white} size={ScreenUtil.setSpFont(20)}
+                            <AntDesign name={'arrowleft'} color={Theme.white} size={ScreenUtil.setSpFont(20)}
                                        style={{paddingLeft: ScreenUtil.scaleSizeW(10)}}/>
                             <Text style={Style.barTitle}>{' '}{Message.MY_INTEGRAL_HISTORY}</Text>
                         </View>
@@ -77,35 +89,55 @@ class IntegralHistory extends Component {
     }
 
     //数据列表
-    _list() {
+    _listContians() {
         const {integralHistoryList} = this.props.my;
+        const data = [];
+        data.push({items: integralHistoryList})
         return (
-            <FlatList
-                showsVerticalScrollIndicator={false}
-                data={integralHistoryList}
-                renderItem={({item}) => this._listItem(item)}
-                refreshControl={
-                    <RefreshControl
-                        title={'Loading'}
-                        colors={[Theme.themeColor]}
-                        refreshing={false}
-                        onRefresh={() => {
-                            this._onRefresh();
-                        }}
-                    />
-                }
-                refreshing={false}
-                onEndReached={() => this._onLoadMore()}
-                onEndReachedThreshold={0.1}
-                //添加尾布局
-                ListFooterComponent={this._createListFooter.bind(this)}
+            <LargeList
+                ref={ref => (this._list = ref)}
+                style={styles.container}
+                data={data}
+                heightForSection={() => 0}
+                renderSection={this._renderSection}
+                refreshHeader={ListHeader}
+                loadingFooter={ListFooter}
+                allLoaded={this.state.allLoaded}
+                onLoading={() => {
+                    this._onLoadMore();
+                }}
+                renderIndexPath={this._renderIndexPath}
+                heightForIndexPath={() => ScreenUtil.scaleSizeH(140)}
+                renderEmpty={this._renderEmpty}
+                onRefresh={() => {
+                    this._onRefresh()
+                }}
             />
-        );
+        )
     }
 
+    //数据为空时
+    _renderEmpty = () => {
+        return (
+            <View style={styles.empty}>
+                <Text>{'没有数据'}</Text>
+            </View>
+        );
+    };
 
-    //数据展示
-    _listItem(item) {
+    //分区渲染 置空
+    _renderSection = (section) => {
+
+        return (
+            <View style={{height: 0}}>
+            </View>
+        );
+    };
+
+
+    _renderIndexPath = ({section: section, row: row}) => {
+        const {integralHistoryList} = this.props.my;
+        let item = integralHistoryList[row];
         let tempArray = item.desc.split(',');
         let grade = tempArray[1];
         let tempTime = tempArray[0].split(' ');
@@ -113,7 +145,6 @@ class IntegralHistory extends Component {
             <View style={[styles.itemView, Style.rowCenterCenter]}>
                 <TouchableHighlight
                     underLayColor={'transparent'}
-                    onPress={() => this.jumpWeb(item)}
                 >
                     <Card
                         cornerRadius={0}
@@ -134,19 +165,6 @@ class IntegralHistory extends Component {
         );
     }
 
-    /**
-     * 创建尾部布局
-     */
-    _createListFooter = () => {
-        const {font2} = this.props.my;
-        return (
-            <View style={Style.footerView}>
-                <Text style={Style.footerFont}>
-                    {font2 === 0 ? '' : font2 === 1 ? '正在加载更多数据...' : '没有更多数据了'}
-                </Text>
-            </View>
-        );
-    };
     /**
      * 下啦刷新
      * @private
@@ -179,8 +197,8 @@ class IntegralHistory extends Component {
         return (
             <View style={styles.contains}>
                 {this._nav()}
-                {this._list()}
-                <Loading isShow={this.props.my.isLoading}/>
+                {this._listContians()}
+                {/*<Loading isShow={this.props.my.isLoading}/>*/}
             </View>
         );
     }
@@ -205,6 +223,34 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps, mapDispatchToProps)(IntegralHistory);
 
 const styles = StyleSheet.create({
+
+    container: {
+        flex: 1,
+    },
+    section: {
+        flex: 1,
+        backgroundColor: "gray",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    row: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    line: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: 1,
+        backgroundColor: "#EEE"
+    },
+    empty: {
+        marginVertical: 20,
+        alignSelf: "center"
+    },
+
     contains: {
         flex: 1,
         backgroundColor: Theme.white,

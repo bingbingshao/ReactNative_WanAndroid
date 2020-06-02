@@ -67,6 +67,9 @@ target 'playAndroid' do
 
   pod 'react-native-viewpager', :path => '../node_modules/@react-native-community/viewpager'
 
+  
+  pod 'RNSpringScrollView', :path => '../node_modules/react-native-spring-scrollview/ios'
+
   target 'playAndroidTests' do
     inherit! :complete
     # Pods for testing

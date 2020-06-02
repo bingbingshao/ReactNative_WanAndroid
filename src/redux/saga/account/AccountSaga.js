@@ -4,6 +4,7 @@
  * @name: AccountSaga
  * @description：AccountSaga
  */
+import {DeviceEventEmitter} from 'react-native';
 import {put, select, call, delay} from 'redux-saga/dist/redux-saga-effects-npm-proxy.esm';
 import {AccountStateChange} from '../../action/account/AccountAction';
 import {getData, getParamsData} from '../../../component/NetUtils';
@@ -37,6 +38,7 @@ export function* getAccountMenu() {
         yield put(AccountStateChange({
             menuList: response.data,
             menuSelectedId: response.data[0].id,
+            dataList: new Array(response.data.length),
         }));
         yield* getAccountList();
     } else {  //获取失败
@@ -53,12 +55,14 @@ export function* getAccountList() {
     yield put(AccountStateChange({
         isLoading: true,
     }));
-    const {isRefresh, page, menuSelectedId, dataList} = yield select(state => state.account);
+    const {isRefresh, page, menuSelectedId, dataList,nowChildPage} = yield select(state => state.account);
 
     let response = yield call(getData.bind(this, {url: API.ACCOUNT_LIST + menuSelectedId + '/' + page + API.HOME_ARTICLE_LIST_END}));
 
     // console.log('getAccountList', response);
     // console.log('getAccountList', API.ACCOUNT_LIST + menuSelectedId + '/' + page + API.HOME_ARTICLE_LIST_END);
+
+    DeviceEventEmitter.emit(TypeId.ACCOUNT_GET_SUCCESS);
 
     yield put(AccountStateChange({
         isLoading: false,
@@ -71,14 +75,16 @@ export function* getAccountList() {
 
     if (response.errorCode == TypeId.ERROR_CODE_1) {  //获取数据成功
         if (isRefresh) {  //是刷新
-            yield put(AccountStateChange({
-                dataList: response.data.datas,
-            }));
+            dataList[nowChildPage] = response.data.datas;
         } else {
-            yield put(AccountStateChange({
-                dataList: dataList.concat(response.data.datas),
-            }));
+
+            let data = dataList[nowChildPage];
+
+            dataList[nowChildPage] = data.concat(response.data.datas);
         }
+        yield put(AccountStateChange({
+            dataList: dataList,
+        }));
         yield put(AccountStateChange({
             font: page + 1 < response.data.pageCount ? 0 : 2,
             isRefresh: false,

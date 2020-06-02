@@ -311,7 +311,7 @@ class index extends Component {
                         {this._listView()}
                     </View>
                 </ScrollView>
-                <Loading isShow={this.props.my.isLoading}/>
+                {/*<Loading isShow={this.props.my.isLoading}/>*/}
             </View>
         );
     }

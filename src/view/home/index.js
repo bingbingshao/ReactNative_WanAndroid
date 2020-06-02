@@ -39,6 +39,9 @@ import {BoxShadow} from 'react-native-shadow';
 import Store from 'react-native-simple-store';
 import Util from '../../component/Util';
 import * as TypeId from '../../component/TypeId';
+import {LargeList} from "react-native-largelist-v3";
+import {ListHeader} from "../../component/ListHeader";
+import {ListFooter} from "../../component/ListFooter";
 
 class index extends Component {
     constructor() {
@@ -86,6 +89,10 @@ class index extends Component {
 
         this.listener = DeviceEventEmitter.addListener(TypeId.LOGIN_SUCCESS, (param) => {
             this._onRefresh();
+        });
+        this.listener = DeviceEventEmitter.addListener(TypeId.HOME_GET_SUCCESS, (param) => {  //触发关闭刷新或加载
+            this._list.endRefresh();
+            this._list.endLoading();
         });
     }
 
@@ -196,7 +203,7 @@ class index extends Component {
         return (
             <View>
                 <StatusBar barStyle={'light-content'} translucent={true} backgroundColor={themeColor}/>
-                <View style={[Style.barView, Style.rowBetweenCenter,{backgroundColor:themeColor}]}>
+                <View style={[Style.barView, Style.rowBetweenCenter, {backgroundColor: themeColor}]}>
                     <Text style={Style.barTitle}>{Message.HOME}</Text>
                     <TouchableHighlight
                         underlayColor={'transparent'}
@@ -210,7 +217,7 @@ class index extends Component {
     }
 
     //轮播图
-    _banner() {
+    _banner = () => {
         const {bannerList} = this.props.home;
         const {themeColor} = this.props.theme;
         return (
@@ -228,8 +235,8 @@ class index extends Component {
                                 horizontal={true}
                                 showsPagination={true}
                                 paginationStyle={styles.paginationStyle}
-                                dotStyle={[styles.dotStyle,{backgroundColor:themeColor}]}
-                                activeDotStyle={[styles.activeDotStyle,{backgroundColor:themeColor}]}
+                                dotStyle={[styles.dotStyle, {backgroundColor: themeColor}]}
+                                activeDotStyle={[styles.activeDotStyle, {backgroundColor: themeColor}]}
                             >
                                 {
                                     bannerList.map((data) => {
@@ -256,37 +263,57 @@ class index extends Component {
     }
 
     //数据列表
-    _list() {
+    _listData() {
         const {articleList} = this.props.home;
-        // console.log('articleList', articleList);
+        const data = [];
+        data.push({items: articleList})
+
         return (
-            <FlatList
-                showsVerticalScrollIndicator={false}
-                data={articleList}
-                renderItem={({item}) => this._listItem(item)}
-                refreshControl={
-                    <RefreshControl
-                        title={'Loading'}
-                        colors={[Theme.themeColor]}
-                        refreshing={false}
-                        onRefresh={() => {
-                            this._onRefresh();
-                        }}
-                    />
-                }
-                ListHeaderComponent={this._banner()}
-                refreshing={false}
-                onEndReached={() => this._onLoadMore()}
-                onEndReachedThreshold={0.1}
-                //添加尾布局
-                ListFooterComponent={this._createListFooter.bind(this)}
+            <LargeList
+                ref={ref => (this._list = ref)}
+                style={styles.container}
+                data={data}
+                heightForSection={() => 0}
+                renderSection={this._renderSection}
+                renderHeader={this._banner}
+                refreshHeader={ListHeader}
+                loadingFooter={ListFooter}
+                allLoaded={this.state.allLoaded}
+                onLoading={() => {
+                    this._onLoadMore();
+                }}
+                renderIndexPath={this._renderIndexPath}
+                heightForIndexPath={() => ScreenUtil.scaleSizeH(190)}
+                renderEmpty={this._renderEmpty}
+                onRefresh={() => {
+                    this._onRefresh()
+                }}
             />
-        );
+        )
     }
 
+    //数据为空时
+    _renderEmpty = () => {
+        return (
+            <View style={styles.empty}>
+                <Text>{'没有数据'}</Text>
+            </View>
+        );
+    };
 
-    //数据展示
-    _listItem(item) {
+    //分区渲染 置空
+    _renderSection = (section) => {
+
+        return (
+            <View style={{height: 0}}>
+            </View>
+        );
+    };
+
+
+    _renderIndexPath = ({section: section, row: row}) => {
+        const {articleList} = this.props.home;
+        let item = articleList[row];
         const shadowOpt = {
             width: deviceWidth - ScreenUtil.scaleSizeW(20),
             height: ScreenUtil.scaleSizeH(180),
@@ -366,19 +393,6 @@ class index extends Component {
     }
 
     /**
-     * 创建尾部布局
-     */
-    _createListFooter = () => {
-        const {font} = this.props.home;
-        return (
-            <View style={Style.footerView}>
-                <Text style={Style.footerFont}>
-                    {font === 0 ? '' : font === 1 ? '正在加载更多数据...' : '没有更多数据了'}
-                </Text>
-            </View>
-        );
-    };
-    /**
      * 下啦刷新
      * @private
      */
@@ -409,7 +423,7 @@ class index extends Component {
         return (
             <View style={styles.contains}>
                 {this._nav()}
-                {this._list()}
+                {this._listData()}
                 <Loading isShow={this.props.home.isLoading}/>
             </View>
         );
@@ -444,6 +458,35 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps, mapDispatchToProps)(index);
 
 const styles = StyleSheet.create({
+
+
+    container: {
+        flex: 1,
+    },
+    section: {
+        flex: 1,
+        backgroundColor: "gray",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    row: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    line: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: 1,
+        backgroundColor: "#EEE"
+    },
+    empty: {
+        marginVertical: 20,
+        alignSelf: "center"
+    },
+
     contains: {
         flex: 1,
         backgroundColor: Theme.color_3,
@@ -452,9 +495,11 @@ const styles = StyleSheet.create({
         marginTop: -ScreenUtil.scaleSizeH(6),
         width: deviceWidth,
         height: bannerHeight,
+        backgroundColor: "#ff0"
     },
     bannerView: {
         width: deviceWidth,
+
     },
     bannerViewImage: {
         width: deviceWidth,

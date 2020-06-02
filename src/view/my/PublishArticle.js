@@ -12,6 +12,7 @@ import {
     StyleSheet, StatusBar, TouchableHighlight,
     Modal,
     TouchableWithoutFeedback,
+    TouchableNativeFeedback
 } from 'react-native';
 import {bindActionCreators} from 'redux';
 import {goSquareSeriesDetails, goWebView, goBackPage} from '../../redux/action/NavigationAction';
@@ -108,6 +109,7 @@ class PublishArticle extends Component {
     _contain() {
         const {userName} = this.props.login;
         const {title, link} = this.props.my;
+        const {themeColor} = this.props.theme;
         return (
             <View style={Style.columnStartCenter}>
                 <View style={styles.containView}>
@@ -153,7 +155,7 @@ class PublishArticle extends Component {
                     <TouchableHighlight
                         underlayColor={'transparent'}
                         onPress={() => this.shareArticle()}>
-                        <View style={[styles.button, Style.rowCenterCenter]}>
+                        <View style={[styles.button, Style.rowCenterCenter, {backgroundColor: themeColor}]}>
                             <Text style={styles.buttonFont}>{'分享'}</Text>
                         </View>
                     </TouchableHighlight>
@@ -164,6 +166,7 @@ class PublishArticle extends Component {
 
     _modal() {
         const {showTip} = this.props.my;
+        const {themeColor} = this.props.theme;
         return (
             <Modal
                 visible={showTip}
@@ -172,7 +175,7 @@ class PublishArticle extends Component {
                 transparent={true}>
                 <View style={styles.modalView}>
                     {Platform.OS == 'android' ? <StatusBar backgroundColor={Theme.blackTransparent}/> : null}
-                    <TouchableWithoutFeedback
+                    <TouchableNativeFeedback
                         underlayColor={'transparent'}
                         onPress={() => this.props.MyStateChange({showTip: false})}>
                         <View style={styles.modalView1}>
@@ -195,11 +198,11 @@ class PublishArticle extends Component {
                                 <TouchableHighlight
                                     underlayColor={'transparent'}
                                     onPress={() => this.props.MyStateChange({showTip: false})}>
-                                    <Text style={styles.modalFont2}>{'了解'}</Text>
+                                    <Text style={[styles.modalFont2, {color: themeColor}]}>{'了解'}</Text>
                                 </TouchableHighlight>
                             </View>
                         </View>
-                    </TouchableWithoutFeedback>
+                    </TouchableNativeFeedback>
                 </View>
 
             </Modal>

@@ -25,6 +25,8 @@ import com.swmansion.reanimated.ReanimatedPackage;
 import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
 // react-native-screens
 import com.swmansion.rnscreens.RNScreensPackage;
+// react-native-spring-scrollview
+import com.bolan9999.SpringScrollViewPackage;
 // react-native-svg
 import com.horcrux.svg.SvgPackage;
 // react-native-vector-icons
@@ -83,6 +85,7 @@ public class PackageList {
       new ReanimatedPackage(),
       new SafeAreaContextPackage(),
       new RNScreensPackage(),
+      new SpringScrollViewPackage(),
       new SvgPackage(),
       new VectorIconsPackage(),
       new RNCWebViewPackage()
